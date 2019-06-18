@@ -24,10 +24,31 @@ class BotAdminCommands:
         self.shift_index_messages = 0
 
     # -------------------------------------------------------------------------------
+    # send text message
     def send_to_all_auth_users(self, message: str):
         list_chats = self._db.get_chats('OK')
         for chat_index in list_chats:
             result = self._bot_handler.send_message(chat_index, message)
+            self.g_logger.debug('result=' + str(result))
+            self.g_logger.debug('result_text=' + str(result.text))
+
+            result_json = json.loads(result.text)
+            if not result_json['ok']:
+                if 'chat not found' in result_json['description']:
+                    self.g_logger.debug('delete from db chat=' + str(chat_index))
+                    self._db.delete_item(chat_index)
+            # The API will not allow more than ~30 messages to different users per second
+            sleep(0.1)
+
+    # -------------------------------------------------------------------------------
+    # send text message
+    def send_file_to_all_auth_users(self, file_data: str, file_name: str):
+        list_chats = self._db.get_chats('OK')
+        for chat_index in list_chats:
+            result = self._bot_handler.send_file_as_text(chat_index, file_data, file_name)
+            if len(file_data) > 300:
+                result = self._bot_handler.send_file_as_file(chat_index, file_name)
+
             self.g_logger.debug('result=' + str(result))
             self.g_logger.debug('result_text=' + str(result.text))
 
@@ -84,7 +105,7 @@ class BotAdminCommands:
                 s_pass = args[1]
             self.g_logger.debug('/login: s_pass=' + s_pass)
             if s_pass == self._master_password:
-                self.g_logger.debug('last_chat_id=' + last_chat_id + 'added to DB')
+                self.g_logger.debug('last_chat_id=' + str(last_chat_id) + 'added to DB')
                 self._db.add_item('OK', last_chat_id)
                 self._bot_handler.send_message(last_chat_id, 'OK, pass checked')
 
@@ -106,7 +127,7 @@ class BotAdminCommands:
         # === INPUT MESSAGE = test
         if t.startswith('/test'):
             build_keyboard = self._bot_handler.build_keyboard(['qwe1', 'asd1', 'zxc', 'zxc_TTT'])
-            self._bot_handler.send_message_2(last_chat_id, 'Выбери 1', build_keyboard)
+            self._bot_handler.send_message_list(last_chat_id, 'Выбери 1', build_keyboard)
 
         self.shift_index_messages = last_update_id + 1
     # ------------------------------------------------------------
