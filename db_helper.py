@@ -1,8 +1,10 @@
-'''
-Sergey Brazgin    sbrazgin@gmail.com
-Date 05/2019
-Project: Simple telegram bot for file messages
-'''
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""  Sergey Brazgin 05/2019
+  sbrazgin@mail.ru
+  Project: Simple telegram bot for file messages
+"""
 
 import sqlite3
 
